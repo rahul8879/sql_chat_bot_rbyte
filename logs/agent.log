@@ -125,3 +125,15 @@ WHERE o.OrderID IS NULL;
 
 **Summary:** Sara Lopez from Canada has not made any purchases yet.
 2025-12-13 22:45:10,262	INFO	Azure Monitor logging enabled
+2025-12-15 16:38:46,386	INFO	Azure Monitor logging enabled
+2025-12-15 16:38:46,387	INFO	AZURE_STORAGE_CONNECTION_STRING not set; Azure Table logging disabled
+2025-12-15 16:39:20,697	INFO	session=12263040-bcb0-4e16-9b1f-91488af4ebf5 question=Hi executed_query=None answer=Hello! 👋  
+I’m your expert SQL data analyst assistant. How can I help you today — would you like to explore some data, analyze trends, or generate a specific report from your Azure SQL or Fabric database?
+2025-12-15 16:40:19,767	INFO	executing_query=SELECT FirstName, LastName
+FROM Customers
+GROUP BY FirstName, LastName
+HAVING COUNT(DISTINCT Email) > 1;
+2025-12-15 16:40:21,107	INFO	session=27810d91-4f13-40f2-9cfd-d46d89caac2a question=Which customer should have multiple email id executed_query=None answer=No customers currently have multiple email IDs in the database — each name appears with only one unique email address.  
+
+**Summary:**  
+All customers have a single email record in the `Customers` table.

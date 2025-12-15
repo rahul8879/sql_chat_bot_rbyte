@@ -1,6 +1,6 @@
-# Azure SQL LangGraph Agent
+# Azure SQL  Agent
 
-Agent that converts natural language to T‑SQL for Azure SQL Database (or Fabric SQL endpoints) using LangGraph/LangChain and Azure OpenAI. Includes a FastAPI wrapper, notebook for experimentation, and Azure Monitor logging.
+Agent that converts natural language to SQL for Azure SQL Database (or Fabric SQL endpoints) using LangGraph/LangChain/MAF and Azure OpenAI. Includes a FastAPI wrapper, notebook for experimentation, and Azure Monitor logging.
 
 ## Project layout
 - `azure_sql_agent/`
