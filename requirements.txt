@@ -1,0 +1,13 @@
+pandas
+python-dotenv
+langchain
+langgraph
+langchain-community
+azure-identity
+azure-storage-blob
+langchain-openai
+sqlalchemy
+pyodbc
+azure-monitor-opentelemetry-exporter
+fastapi
+uvicorn
