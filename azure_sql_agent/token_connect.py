@@ -10,10 +10,18 @@ from sqlalchemy import create_engine
 SQL_COPT_SS_ACCESS_TOKEN = 1256
 
 
-def connect_with_default_credential(server: str, database: str, driver: str = "ODBC Driver 18 for SQL Server") -> Tuple[SQLDatabase, object]:
+def connect_with_default_credential(
+    server: str,
+    database: str,
+    driver: str = "ODBC Driver 18 for SQL Server",
+    include_tables: list[str] | None = None,
+    sample_rows_in_table_info: int = 3,
+) -> Tuple[SQLDatabase, object]:
     """
     Connect to Azure SQL using DefaultAzureCredential and return (SQLDatabase, engine).
     This uses Active Directory access tokens (MFA-friendly) without embedding credentials in the URI.
+    include_tables: optional whitelist of tables to expose to the agent.
+    sample_rows_in_table_info: number of sample rows per table when introspecting schema.
     """
     print(f"[connect_with_default_credential] server={server}, database={database}, driver={driver}")
     print("[connect_with_default_credential] acquiring token via DefaultAzureCredential...")
@@ -41,6 +49,10 @@ def connect_with_default_credential(server: str, database: str, driver: str = "O
         connect_args={"attrs_before": {SQL_COPT_SS_ACCESS_TOKEN: token_struct}},
     )
     print("[connect_with_default_credential] engine created, wrapping with SQLDatabase...")
-    db = SQLDatabase(engine)
+    db = SQLDatabase(
+        engine,
+        include_tables=include_tables,
+        sample_rows_in_table_info=sample_rows_in_table_info,
+    )
     print("[connect_with_default_credential] SQLDatabase ready.")
     return db, engine

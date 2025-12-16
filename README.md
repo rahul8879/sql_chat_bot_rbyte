@@ -33,6 +33,9 @@ Required:
 
 Optional:
 - `AZURE_MONITOR_CONNECTION_STRING` – Application Insights connection string to export logs.
+- `SQL_ALLOWED_TABLES` – comma-separated table names to expose to the agent (useful to limit to 1-2 tables).
+- `SQL_SCHEMA_SAMPLE_ROWS` – rows to include per table when building schema prompts (default 3).
+- `AGENT_RECURSION_LIMIT` – LangGraph recursion limit for a single request (default 12) to avoid tool loops.
 
 Copy `.env_example` to `.env` and fill in your values (do not commit secrets).
 

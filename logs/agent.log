@@ -137,3 +137,16 @@ HAVING COUNT(DISTINCT Email) > 1;
 
 **Summary:**  
 All customers have a single email record in the `Customers` table.
+2025-12-16 08:31:53,394	INFO	Azure Monitor logging enabled
+2025-12-16 08:31:53,395	INFO	AZURE_STORAGE_CONNECTION_STRING not set; Azure Table logging disabled
+2025-12-16 08:32:42,668	INFO	session=bffac3f3-81e5-42ec-83e9-0564ad4e631a question=Hi executed_query=None answer=Hello! 👋  
+I’m your expert SQL assistant for Azure SQL Database or Fabric T-SQL endpoints.  
+How can I help you today — would you like to explore some data, analyze trends, or check specific metrics?
+2025-12-16 08:36:20,471	INFO	Azure Monitor logging enabled
+2025-12-16 08:36:20,473	INFO	AZURE_STORAGE_CONNECTION_STRING not set; Azure Table logging disabled
+2025-12-16 08:36:37,980	INFO	session=04dc20fa-56f5-461a-8f96-b5944e2cf7fa question=Hi executed_query=None answer=Hello! 👋  
+I’m your expert SQL assistant for Azure SQL Database or Fabric T-SQL endpoints.  
+How can I help you today — would you like to explore some data, analyze trends, or check specific metrics?
+2025-12-16 08:36:46,271	INFO	session=0f11e0ec-ac39-4a6d-82f4-b52da8222036 question=How many table we have executed_query=None answer=There is **one table** in the database, named **`Customers`**.  
+
+It contains customer-related information such as `CustomerID`, `FirstName`, `LastName`, `Email`, `Country`, and `CreatedAt`.

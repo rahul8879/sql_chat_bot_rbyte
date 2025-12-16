@@ -22,5 +22,7 @@ def build_sql_database(config: DatabaseConfig) -> SQLDatabase:
         server=config.server,
         database=config.database,
         driver=config.driver,
+        include_tables=config.allowed_tables,
+        sample_rows_in_table_info=config.schema_sample_rows,
     )
     return db

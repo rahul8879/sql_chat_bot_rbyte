@@ -22,6 +22,7 @@ class DatabaseConfig:
     database: str
     driver: str = "ODBC Driver 18 for SQL Server"
     schema_sample_rows: int = 3
+    allowed_tables: list[str] | None = None
 
 
 def load_openai_config() -> OpenAIConfig:
@@ -57,6 +58,10 @@ def load_database_config() -> DatabaseConfig:
     database = os.getenv("AZURE_SQL_DATABASE")
     driver = os.getenv("AZURE_SQL_DRIVER", "ODBC Driver 18 for SQL Server")
     schema_sample_rows = int(os.getenv("SQL_SCHEMA_SAMPLE_ROWS", "3"))
+    allowed_tables_env = os.getenv("SQL_ALLOWED_TABLES")
+    allowed_tables = ['Customers']  # Default tables
+    if allowed_tables_env:
+        allowed_tables = [tbl.strip() for tbl in allowed_tables_env.split(",") if tbl.strip()]
 
     if not (server and database):
         raise ValueError(
@@ -68,4 +73,5 @@ def load_database_config() -> DatabaseConfig:
         database=database,
         driver=driver,
         schema_sample_rows=schema_sample_rows,
+        allowed_tables=allowed_tables,
     )

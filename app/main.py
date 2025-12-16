@@ -30,6 +30,7 @@ from azure_sql_agent import create_agent_from_env
 app = FastAPI(title="Azure SQL LangGraph Agent")
 agent, db, llm = create_agent_from_env()
 logger = logging.getLogger("azure_sql_agent_app")
+AGENT_RECURSION_LIMIT = int(os.getenv("AGENT_RECURSION_LIMIT", "12"))
 
 # File-based logging for session/question/query/answer
 LOG_DIR = ROOT / "logs"
@@ -84,7 +85,10 @@ class QueryRequest(BaseModel):
 def ask(req: QueryRequest):
     session_id = str(uuid.uuid4())
     try:
-        result = agent.invoke({"messages": [HumanMessage(content=req.question)]})
+        result = agent.invoke(
+            {"messages": [HumanMessage(content=req.question)]},
+            config={"recursion_limit": AGENT_RECURSION_LIMIT},
+        )
         messages = result.get("messages", [])
 
         # Prefer the last AIMessage in the trace (skip tool/human messages)
