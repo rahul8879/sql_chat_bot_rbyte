@@ -1,0 +1,7 @@
+logs/
+notebook/
+azure_sql_agent/__pycache__/
+app/__pycache__/
+__pycache__/
+.env
+local.settings.json

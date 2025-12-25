@@ -1,12 +1,11 @@
 import json
 import logging
 import logging.handlers
-import sys
+import threading
 import uuid
-from pathlib import Path
 from datetime import datetime
-from dotenv import load_dotenv
-
+from pathlib import Path
+import sys
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langchain_core.messages import AIMessage, HumanMessage
@@ -17,32 +16,26 @@ from opentelemetry.sdk._logs import LoggingHandler
 from azure.data.tables import TableServiceClient
 import os
 
-
-ROOT = Path(__file__).resolve().parent.parent
-if str(ROOT) not in sys.path:
-    sys.path.append(str(ROOT))
-
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 from azure_sql_agent import create_agent_from_env
 
 
 app = FastAPI(title="Azure SQL LangGraph Agent")
-agent, db, llm = create_agent_from_env()
 logger = logging.getLogger("azure_sql_agent_app")
 AGENT_RECURSION_LIMIT = int(os.getenv("AGENT_RECURSION_LIMIT", "12"))
 
-# File-based logging for session/question/query/answer
-LOG_DIR = ROOT / "logs"
-LOG_DIR.mkdir(exist_ok=True)
+# Logging: console by default; optional file logs for local use.
 if not logger.handlers:
-    file_handler = logging.handlers.RotatingFileHandler(
-        LOG_DIR / "agent.log", maxBytes=1_000_000, backupCount=5
-    )
     fmt = logging.Formatter("%(asctime)s\t%(levelname)s\t%(message)s")
-    file_handler.setFormatter(fmt)
-    logger.addHandler(file_handler)
-    # Also keep console output
+    if os.getenv("LOG_TO_FILE", "0") == "1":
+        log_dir = BASE_DIR / "logs"
+        log_dir.mkdir(exist_ok=True)
+        file_handler = logging.handlers.RotatingFileHandler(
+            log_dir / "agent.log", maxBytes=1_000_000, backupCount=5
+        )
+        file_handler.setFormatter(fmt)
+        logger.addHandler(file_handler)
     console = logging.StreamHandler(sys.stdout)
     console.setFormatter(fmt)
     logger.addHandler(console)
@@ -61,20 +54,38 @@ if conn_str:
 else:
     logger.info("AZURE_MONITOR_CONNECTION_STRING not set; Azure Monitor logging disabled")
 
-# Optional: log to Azure Table Storage
-table_client = None
-storage_conn = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-table_name = os.getenv("AZURE_TABLE_NAME", "AgentLogs")
-if storage_conn:
+# Lazy-initialized resources to avoid failing the host on startup.
+_agent_lock = threading.Lock()
+_agent_bundle = None
+
+
+def _build_table_client():
+    storage_conn = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+    table_name = os.getenv("AZURE_TABLE_NAME", "AgentLogs")
+    if not storage_conn:
+        logger.info("AZURE_STORAGE_CONNECTION_STRING not set; Azure Table logging disabled")
+        return None
     try:
         ts = TableServiceClient.from_connection_string(storage_conn)
         ts.create_table_if_not_exists(table_name=table_name)
-        table_client = ts.get_table_client(table_name=table_name)
         logger.info("Azure Table logging enabled (table=%s)", table_name)
+        return ts.get_table_client(table_name=table_name)
     except Exception as exc:
         logger.exception("Failed to enable Azure Table logging: %s", exc)
-else:
-    logger.info("AZURE_STORAGE_CONNECTION_STRING not set; Azure Table logging disabled")
+        return None
+
+
+def _get_agent_bundle():
+    global _agent_bundle
+    if _agent_bundle is not None:
+        return _agent_bundle
+    with _agent_lock:
+        if _agent_bundle is not None:
+            return _agent_bundle
+        agent, db, llm = create_agent_from_env()
+        table_client = _build_table_client()
+        _agent_bundle = (agent, db, llm, table_client)
+        return _agent_bundle
 
 
 class QueryRequest(BaseModel):
@@ -85,6 +96,7 @@ class QueryRequest(BaseModel):
 def ask(req: QueryRequest):
     session_id = str(uuid.uuid4())
     try:
+        agent, _db, _llm, table_client = _get_agent_bundle()
         result = agent.invoke(
             {"messages": [HumanMessage(content=req.question)]},
             config={"recursion_limit": AGENT_RECURSION_LIMIT},
@@ -139,11 +151,3 @@ def ask(req: QueryRequest):
         raise HTTPException(status_code=500, detail=str(exc))
 
 
-@app.get("/healthz")
-def healthz():
-    try:
-        # Lightweight check; if the engine is unhealthy this will raise
-        db.run("SELECT 1")
-        return {"status": "ok"}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))

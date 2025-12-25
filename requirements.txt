@@ -5,9 +5,11 @@ langgraph
 langchain-community
 azure-identity
 azure-storage-blob
+azure-data-tables
 langchain-openai
 sqlalchemy
 pyodbc
 azure-monitor-opentelemetry-exporter
 fastapi
 uvicorn
+azure-functions

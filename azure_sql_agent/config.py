@@ -1,10 +1,6 @@
 import os
 from dataclasses import dataclass
 
-from dotenv import load_dotenv
-
-# Load once for notebook flows
-load_dotenv()
 
 
 @dataclass
